@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medi-Shop</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #c2e9fb; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .phone-frame { width: 360px; height: 640px; background: #f5f6fa; border-radius: 35px; border: 8px solid #2d3436; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .header { padding: 15px 20px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #dcdde1; }
+        .cart-icon { position: relative; font-size: 24px; }
+        .badge { position: absolute; top: -5px; right: -5px; background: #ff4757; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        .list { padding: 15px; overflow-y: auto; flex-grow: 1; }
+        
+        .item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .img-placeholder { width: 60px; height: 60px; background: #dfe6e9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        
+        .details { flex-grow: 1; }
+        .name { font-weight: bold; color: #2d3436; }
+        .price { color: #6c5ce7; font-weight: bold; font-size: 14px; }
+        .comp { font-size: 10px; color: #b2bec3; text-decoration: line-through; }
+        
+        .add-btn { background: #6c5ce7; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .add-btn:active { transform: scale(0.9); background: #4834d4; }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="header">
+            <button onclick="window.location.href='index.html'" style="border:none; background:none; font-size:24px; cursor:pointer;">←</button>
+            <span style="font-weight:bold; color:#6c5ce7; font-size:18px;">Medi-Shop</span>
+            <div class="cart-icon">🛒<div class="badge" id="cart-count">0</div></div>
+        </div>
+
+        <div class="list" id="products">
+            </div>
+    </div>
+
+    <script>
+        const items = [
+            {n: "Dolo 650", p: 30, old: 40, i: "💊"},
+            {n: "Vicks VapoRub", p: 140, old: 160, i: "🏺"},
+            {n: "Digene Gel", p: 90, old: 110, i: "🧴"},
+            {n: "Band-Aid", p: 25, old: 35, i: "🩹"},
+            {n: "Mask N95", p: 40, old: 80, i: "😷"},
+            {n: "Thermometer", p: 250, old: 350, i: "🌡️"},
+            {n: "Cotton", p: 30, old: 50, i: "☁️"}
+        ];
+
+        let count = 0;
+        const container = document.getElementById('products');
+
+        items.forEach(item => {
+            container.innerHTML += `
+            <div class="item">
+                <div class="img-placeholder">${item.i}</div>
+                <div class="details">
+                    <div class="name">${item.n}</div>
+                    <div><span class="price">₹${item.p}</span> <span class="comp">₹${item.old}</span></div>
+                </div>
+                <button class="add-btn" onclick="add()">ADD</button>
+            </div>`;
+        });
+
+        function add() {
+            count++;
+            const badge = document.getElementById('cart-count');
+            badge.innerText = count;
+            badge.style.transform = "scale(1.5)";
+            setTimeout(() => badge.style.transform = "scale(1)", 200);
+        }
+    </script>
+</body>
+</html>

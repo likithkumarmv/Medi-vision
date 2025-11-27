@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Assist</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #c2e9fb; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .phone-frame { width: 360px; height: 640px; background: white; border-radius: 35px; border: 8px solid #2d3436; overflow: hidden; display: flex; flex-direction: column; }
+
+        .header { padding: 20px; background: #6c5ce7; color: white; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+        .chat-area { flex-grow: 1; padding: 20px; overflow-y: auto; background: #f5f6fa; display: flex; flex-direction: column; gap: 10px; }
+        
+        .bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; animation: popIn 0.3s; word-wrap: break-word; }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        .bot { background: white; color: #2d3436; border-bottom-left-radius: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-self: flex-start; }
+        .user { background: #6c5ce7; color: white; border-bottom-right-radius: 0; align-self: flex-end; }
+        
+        .typing { font-style: italic; color: #b2bec3; font-size: 12px; margin-left: 10px; display: none; }
+        .dot { animation: flicker 1s infinite; }
+        .d2 { animation-delay: 0.2s; } .d3 { animation-delay: 0.4s; }
+        @keyframes flicker { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+
+        .input-area { padding: 15px; background: white; border-top: 1px solid #dcdde1; display: flex; gap: 10px; align-items: center; }
+        input { flex-grow: 1; border: 1px solid #dcdde1; border-radius: 20px; padding: 12px 15px; outline: none; font-size: 14px; }
+        .send-btn { background: #6c5ce7; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
+        .send-btn:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            <span>AI Health Assistant</span>
+        </div>
+
+        <div class="chat-area" id="chat">
+            <div class="bubble bot">Hello! 👋 I am your AI Health Assistant. Tell me your symptoms (e.g., "I have a headache" or "My neck hurts").</div>
+        </div>
+
+        <div class="typing" id="loader">AI is thinking<span class="dot">.</span><span class="dot d2">.</span><span class="dot d3">.</span></div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type here..." onkeyup="if(event.key==='Enter') send()">
+            <button class="send-btn" onclick="send()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyC4jAN9uxZO_-4p3_cLvRyI4QSI73soEk8"; 
+
+        // === OFFLINE BACKUP BRAIN (If Internet Fails) ===
+        const offlineDB = {
+            "rash": "<b>Possible Cause:</b> Allergic reaction or heat.<br><b>Remedy:</b> Apply Calamine lotion or Aloe Vera. Keep area dry.<br><b>Warning:</b> See doctor if it spreads or swells.",
+            "neck": "<b>Possible Cause:</b> Strain or poor posture.<br><b>Remedy:</b> Apply hot bag, do gentle stretches.<br><b>Warning:</b> See doctor if pain radiates to arm.",
+            "headache": "<b>Possible Cause:</b> Stress or dehydration.<br><b>Remedy:</b> Drink water, rest in dark room, apply balm.<br><b>Warning:</b> See doctor if vision blurs.",
+            "fever": "<b>Possible Cause:</b> Viral infection.<br><b>Remedy:</b> Rest, fluids, Paracetamol (Dolo 650).<br><b>Warning:</b> Visit hospital if > 102°F.",
+            "stomach": "<b>Possible Cause:</b> Acidity or indigestion.<br><b>Remedy:</b> Drink warm water, take antacid (Eno/Digene).<br><b>Warning:</b> See doctor if pain is severe.",
+            "cold": "<b>Possible Cause:</b> Common cold virus.<br><b>Remedy:</b> Steam inhalation, ginger tea.<br><b>Warning:</b> See doctor if breathing is hard.",
+            "cough": "<b>Possible Cause:</b> Throat irritation.<br><b>Remedy:</b> Honey with warm water, gargle salt water.<br><b>Warning:</b> See doctor if coughing blood."
+        };
+
+        async function send() {
+            const input = document.getElementById('userInput');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            // Add User Bubble
+            addBubble(txt, 'user');
+            input.value = "";
+            
+            // Show Loader
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+
+            const prompt = `Act as a home health assistant. User says: "${txt}". 
+            Reply with: 1. Possible Cause, 2. Remedy, 3. Warning. Keep it under 40 words.`;
+
+            try {
+                // --- ATTEMPT 1: REAL AI ---
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error("API Blocked"); // Trigger fallback if blocked
+
+                const data = await response.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+
+                loader.style.display = 'none';
+                addBubble(aiResponse.replace(/\n/g, '<br>'), 'bot');
+                speak(aiResponse);
+
+            } catch (error) {
+                // --- ATTEMPT 2: OFFLINE BACKUP (SAFETY NET) ---
+                console.log("Online AI failed, switching to Offline Mode.");
+                
+                // Simulate thinking delay for realism
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    
+                    // Find matching keyword in offline DB
+                    let reply = "I cannot connect to the server right now, and I couldn't understand that symptom specifically. Please consult a real doctor.";
+                    const lowerTxt = txt.toLowerCase();
+                    
+                    for(let key in offlineDB) {
+                        if(lowerTxt.includes(key)) {
+                            reply = offlineDB[key];
+                            break;
+                        }
+                    }
+
+                    addBubble(reply, 'bot');
+                    speak(reply.replace(/<[^>]*>/g, '')); // Remove HTML tags for speech
+                }, 1000); 
+            }
+        }
+
+        function addBubble(text, type) {
+            const div = document.createElement('div');
+            div.className = `bubble ${type}`;
+            div.innerHTML = text;
+            const chat = document.getElementById('chat');
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.95;
+            const voices = window.speechSynthesis.getVoices();
+            const voice = voices.find(v => v.lang.includes('en-US'));
+            if(voice) u.voice = voice;
+            window.speechSynthesis.speak(u);
+        }
+        
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    </script>
+</body>
+</html>

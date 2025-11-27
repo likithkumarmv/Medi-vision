@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medi-Vision OS</title>
+    <style>
+        :root { --primary: #0984e3; --glass: rgba(255, 255, 255, 0.95); }
+        body { font-family: 'Segoe UI', sans-serif; background: #dfe6e9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        .phone-frame { width: 360px; height: 640px; background: white; border-radius: 35px; border: 8px solid #2d3436; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+        
+        /* =========================================
+           PREMIUM SPLASH SCREEN STYLES
+           ========================================= */
+        #splash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, #1e3c72, #2a5298, #000000);
+            z-index: 999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center;
+            overflow: hidden;
+        }
+
+        /* Ambient Glowing Orbs */
+        .orb { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.4; animation: float 6s infinite ease-in-out; }
+        .orb-1 { width: 150px; height: 150px; background: #00d2d3; top: -20px; left: -20px; }
+        .orb-2 { width: 200px; height: 200px; background: #5f27cd; bottom: -50px; right: -50px; animation-delay: 1s; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(20px); } 100% { transform: translateY(0px); } }
+
+        /* Glass Card Container */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 20px;
+            border-radius: 20px;
+            width: 80%;
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .logo-icon { font-size: 50px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0, 210, 211, 0.8); animation: pulseLogo 3s infinite; }
+        @keyframes pulseLogo { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+
+        .app-name { font-size: 28px; font-weight: 900; letter-spacing: 1px; margin: 0; background: linear-gradient(to right, #fff, #74b9ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sub-text { font-size: 10px; letter-spacing: 3px; color: #a4b0be; text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; width: 100%; }
+
+        /* WARNING BOX */
+        .warning-badge {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid #e74c3c;
+            color: #ff7675;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* TERMINAL LOGS */
+        .terminal { font-family: 'Courier New', monospace; font-size: 10px; color: #00d2d3; text-align: left; width: 100%; height: 60px; opacity: 0.8; margin-bottom: 10px; }
+        .log-line { overflow: hidden; white-space: nowrap; border-right: 2px solid transparent; width: 0; animation: typing 1s steps(30, end) forwards; }
+        .d-1 { animation-delay: 0s; } .d-2 { animation-delay: 0.8s; } .d-3 { animation-delay: 1.6s; }
+        @keyframes typing { from { width: 0; } to { width: 100%; border-right-color: #00d2d3; } }
+
+        /* BUTTON */
+        .boot-btn {
+            background: linear-gradient(90deg, #0984e3, #00cec9);
+            border: none;
+            padding: 12px 40px;
+            color: white;
+            font-weight: bold;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(9, 132, 227, 0.6);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .boot-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(9, 132, 227, 0.9); }
+
+        .team-tag { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 15px; letter-spacing: 1px; }
+
+        /* =========================================
+           MAIN APP STYLES (Keep existing light theme)
+           ========================================= */
+        .header { padding: 25px 20px 10px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .logo-text { font-size: 22px; font-weight: 800; color: #0984e3; }
+        .lang-select { padding: 5px; border-radius: 10px; border: 1px solid #dfe6e9; font-size: 12px; }
+
+        .welcome-card { margin: 15px 20px; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border-radius: 20px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; flex-grow: 1; overflow-y: auto; background: white; }
+        .card { background: #f1f2f6; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: transform 0.2s; text-align: center; box-shadow: 0 4px 5px rgba(0,0,0,0.05); border: 1px solid white; }
+        .card:active { transform: scale(0.95); }
+        .icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .i-green { background: linear-gradient(45deg, #00b894, #55efc4); }
+        .i-blue { background: linear-gradient(45deg, #0984e3, #74b9ff); }
+        .i-orange { background: linear-gradient(45deg, #e17055, #fab1a0); }
+        .i-purple { background: linear-gradient(45deg, #6c5ce7, #a29bfe); }
+        
+        .sos-btn { position: absolute; bottom: 20px; right: 20px; width: 60px; height: 60px; background: #ff4757; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; border: 4px solid white; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4); z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        
+        <div id="splash">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+
+            <div class="glass-panel">
+                <div class="logo-icon">👁️</div>
+                <h1 class="app-name">MEDI-VISION</h1>
+                <div class="sub-text">AI Diagnostic System</div>
+
+                <div class="warning-badge">
+                    ⚠️ <strong>PROTOTYPE BUILD</strong><br>
+                    Running on Mock Data.<br>
+                    Not for actual medical use.
+                </div>
+
+                <div class="terminal">
+                    <div class="log-line d-1">> Initializing AI Core...</div>
+                    <div class="log-line d-2">> Connecting to Gemini...</div>
+                    <div class="log-line d-3">> Loading Mock Database... OK</div>
+                </div>
+
+                <button class="boot-btn" onclick="enterApp()">Initialize System</button>
+                <div class="team-tag">DESIGNED BY TEAM LRYSS</div>
+            </div>
+        </div>
+
+        <div class="header">
+            <div class="logo-text">Medi-Vision</div>
+            <select class="lang-select" id="language-selector" onchange="saveLang()">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="kn">Kannada</option>
+            </select>
+        </div>
+
+        <div class="welcome-card">
+            <h2 style="margin:0;">Namaste! 🙏</h2>
+            <p style="margin:5px 0 0; font-size:12px; opacity:0.9;">AI Medical Assistant is Active.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card" onclick="nav('scan_medicine.html')">
+                <div class="icon-box i-green">💊</div>
+                <h3>Scan Medicine</h3>
+            </div>
+            <div class="card" onclick="nav('scan_prescription.html')">
+                <div class="icon-box i-blue">📄</div>
+                <h3>Scan Rx</h3>
+            </div>
+            <div class="card" onclick="nav('disease_info.html')">
+                <div class="icon-box i-orange">🤒</div>
+                <h3>Health Assist</h3>
+            </div>
+            <div class="card" onclick="nav('shopping.html')">
+                <div class="icon-box i-purple">🛒</div>
+                <h3>Medi-Shop</h3>
+            </div>
+        </div>
+
+        <div class="sos-btn" onclick="alert('SOS Alert Sent to Caretaker!')">SOS</div>
+    </div>
+
+    <script>
+        // SMART SESSION LOGIC
+        window.onload = () => {
+            // Checks if we have already seen the splash screen this session
+            const hasEntered = sessionStorage.getItem('mediVisionActive');
+            if(hasEntered === 'true') {
+                document.getElementById('splash').style.display = 'none';
+            }
+
+            const l = localStorage.getItem('mediVisionLang');
+            if(l) document.getElementById('language-selector').value = l;
+        };
+
+        function enterApp() {
+            // Fade out animation
+            const splash = document.getElementById('splash');
+            splash.style.transition = 'opacity 0.5s';
+            splash.style.opacity = '0';
+            
+            setTimeout(() => {
+                splash.style.display = 'none';
+                sessionStorage.setItem('mediVisionActive', 'true');
+            }, 500);
+        }
+
+        function saveLang() {
+            localStorage.setItem('mediVisionLang', document.getElementById('language-selector').value);
+        }
+        function nav(page) { window.location.href = page; }
+    </script>
+</body>
+</html>
